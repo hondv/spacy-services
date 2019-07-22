@@ -4,12 +4,13 @@ from __future__ import unicode_literals
 import hug
 from hug_middleware_cors import CORSMiddleware
 import spacy
-
 from displacy.mercury_english_query import en_parse_deps
-
+from ja_text_analyser import analyze_ja_text
+JA_MODEL = "ja"
 
 MODELS = {
     "en_core_web_sm": spacy.load("en_core_web_sm"),
+    JA_MODEL:spacy.load("ja_ginza")
 }
 
 
@@ -34,16 +35,17 @@ def dep(
     collapse_phrases: bool = False,
 ):
     """Get dependencies for displaCy visualizer."""
-    nlp = MODELS[model]
-    doc = nlp(text)
     options = {
         "collapse_punct": collapse_punctuation,
         "collapse_phrases": collapse_phrases,
     }
+    nlp = MODELS[model]
+    doc = nlp(text)
 
     if model.startswith("en_"):
         return en_parse_deps(doc, options)
-
+    elif model == JA_MODEL:
+        return analyze_ja_text.parse_deps(doc, options)
     return spacy.displacy.parse_deps(doc, options)
 
 
